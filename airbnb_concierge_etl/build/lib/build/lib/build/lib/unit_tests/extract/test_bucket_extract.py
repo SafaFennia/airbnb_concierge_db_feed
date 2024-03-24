@@ -1,40 +1,33 @@
-import pathlib
-from tempfile import NamedTemporaryFile
-
-import boto3
-import moto
 import pytest
-from botocore.exceptions import ClientError
-
-from os_bucket import OSBucket
-
-
-@pytest.fixture
-def empty_bucket():
-    moto_fake = moto.mock_s3()
-    try:
-        moto_fake.start()
-        conn = boto3.resource('s3')
-        conn.create_bucket(Bucket="OS_BUCKET")  # or the name of the bucket you use
-        yield conn
-    finally:
-        moto_fake.stop()
+import os
+import boto3
+from moto import mock_aws
+from src.s3funcs import s3_ls
 
 
-def test_download_non_existing_path(empty_bucket):
-    os_bucket = OSBucket()
-    os_bucket.initBucket()
-    with pytest.raises(ClientError) as e:
-        os_bucket.download_file("bad_path", "bad_file")
-    assert "Not Found" in str(e)
+@pytest.fixture(scope='function')
+def aws_credentials():
+    # Mocked AWS Credentials for Moto
+    os.environ['BUCKET_URL'] = 'fakeurl'
+    os.environ['BUCKET_USERNAME'] = 'fake-username'
+    os.environ['BUCKET_PWD'] = 'fake-pwd'
 
 
-def test_upload_and_download(empty_bucket):
-    os_bucket = OSBucket()
-    os_bucket.initBucket()
-    with NamedTemporaryFile() as tmp:
-        tmp.write(b'Hi')
-        file_name = pathlib.Path(tmp.name).name
+@pytest.fixture(scope='function')
+def s3_mock(aws_credentials):
+    with mock_aws():
+        yield boto3.client('s3')
 
-        os_bucket.upload_file(tmp.name, file_name)
-        os_bucket.download_file("/" + file_name, file_name)  # this might indicate a bug in the implementation
+
+@mock_aws
+def test_ls(s3_boto):
+    """Test the custom s3 ls function mocking S3 with moto"""
+
+    bucket = "testbucket"
+    key = "testkey"
+    body = "testing"
+    s3_boto.create_bucket(Bucket=bucket)
+    s3_boto.put_object(Bucket=bucket, Key=key, Body=body)
+    ls_output = s3_ls(Bucket=bucket, Prefix=key)
+    assert len(ls_output) == 1
+    assert ls_output[0] == 'testkey'

@@ -1,12 +1,14 @@
 import pandas as pd
 import boto3
 from datetime import datetime
+from typing import Optional
 
 
 class BucketPull(object):
     """Retrieve data from S3 bucket."""
 
-    def __init__(self, endpoint_url: str, username: str, pwd: str, bucket_name: str, start_datetime: datetime):
+    def __init__(self, endpoint_url: Optional[str], username: Optional[str], pwd: Optional[str], bucket_name: str,
+                 start_datetime: datetime):
         """
         The BucketPull class initialization.
 

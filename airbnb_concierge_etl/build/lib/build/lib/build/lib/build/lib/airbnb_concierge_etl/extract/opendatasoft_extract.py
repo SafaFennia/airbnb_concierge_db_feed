@@ -24,7 +24,7 @@ class OpendatasoftPull(object):
         self.session = session
 
     def opendatasoft_download_api_call(self) -> pd.DataFrame:
-        """Request API to get all ecov_connected networks (filter on field 'role')."""
+        """Request Opendatasoft API to get a dataset by filetring by its name and field."""
         session = self.session or requests.Session()
         query_param = " OR ".join([f"{self.filter_key}=={v}" for v in self.filter_values])
         parameters = [("dataset", self.dataset), ("q", query_param)]

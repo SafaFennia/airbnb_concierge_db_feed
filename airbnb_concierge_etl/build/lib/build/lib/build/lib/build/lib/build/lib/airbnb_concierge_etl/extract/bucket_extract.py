@@ -1,33 +1,38 @@
 import pandas as pd
-import requests
-import io
-from typing import Iterable, Union
+import boto3
+from datetime import datetime
+from typing import Optional
 
 
-class OpendatasoftPull(object):
-    """Retrieve data from opendatasoft API."""
+class BucketPull(object):
+    """Retrieve data from S3 bucket."""
 
-    def __init__(self, base_url: str, dataset: str, filter_key: str, filter_values: Iterable[str],
-                 session: Union[None, requests.Session] = None):
+    def __init__(self, endpoint_url: Optional[str], username: Optional[str], pwd: Optional[str], bucket_name: str,
+                 start_datetime: datetime):
         """
-        The OpendatasoftPull class initialization.
+        The BucketPull class initialization.
 
         Args:
-            base_url: Opendatasoft API base url.
-            dataset: opendatasoft dataset to call.
-            session: requests.session to use ; default will create a new one.
+            endpoint_url: Bucket end point.
+            username: access username.
+            pwd: acess pwd.
+            bucket_name: Bucket name
+            start_datetime: Start datetime
         """
-        self.base_url = base_url
-        self.dataset = dataset
-        self.filter_key = filter_key
-        self.filter_values = filter_values
-        self.session = session
+        self.endpoint_url = endpoint_url
+        self.username = username
+        self.pwd = pwd
+        self.bucket_name = bucket_name
+        self.start_datetime = start_datetime
 
-    def opendatasoft_download_api_call(self) -> pd.DataFrame:
-        """Request API to get all ecov_connected networks (filter on field 'role')."""
-        session = self.session or requests.Session()
-        query_param = " OR ".join([f"{self.filter_key}=={v}" for v in self.filter_values])
-        parameters = [("dataset", self.dataset), ("q", query_param)]
-        response = session.get(url=self.base_url, params=parameters)
-        response.raise_for_status()
-        return pd.read_csv(io.StringIO(response.text), sep=";")
+    def bucket_s3_download_files(self) -> pd.DataFrame:
+        """Request S3 bucket to get all files."""
+        s3 = boto3.resource('s3',
+                            endpoint_url=self.endpoint_url,
+                            aws_access_key_id=self.username,
+                            aws_secret_access_key=self.pwd)
+        bucket = s3.Bucket(self.bucket_name)
+        df_list = [pd.read_csv(obj['Body']) for obj in bucket.objects.all() if
+                   obj.key.endswith('.csv') & (obj.last_modified >= self.start_datetime)]
+        data = pd.concat(df_list)
+        return data

@@ -16,14 +16,13 @@ dependencies = [
         "pandas==2.1.1",
         "requests==2.31.0",
         "boto3"
-
 ]
 
 [project.optional-dependencies]
 dev = [
     'pytest',
     'pydocstyle',
-    'moto'
+    'moto[ec2,s3,all]'
 ]
 
 [tool.pytest.ini_options]

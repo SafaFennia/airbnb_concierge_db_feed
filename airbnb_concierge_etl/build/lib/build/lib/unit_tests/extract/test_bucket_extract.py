@@ -1,18 +1,25 @@
-import boto3
-from moto import mock_s3
 import pytest
+import os
+import boto3
+from moto import mock_aws
 from src.s3funcs import s3_ls
 
 
-@pytest.fixture
-def s3_boto():
-    """Create an S3 boto3 client and return the client object"""
+@pytest.fixture(scope='function')
+def aws_credentials():
+    # Mocked AWS Credentials for Moto
+    os.environ['BUCKET_URL'] = 'fakeurl'
+    os.environ['BUCKET_USERNAME'] = 'fake-username'
+    os.environ['BUCKET_PWD'] = 'fake-pwd'
 
-    s3 = boto3.client('s3')
-    return s3
+
+@pytest.fixture(scope='function')
+def s3_mock(aws_credentials):
+    with mock_aws():
+        yield boto3.client('s3')
 
 
-@mock_s3
+@mock_aws
 def test_ls(s3_boto):
     """Test the custom s3 ls function mocking S3 with moto"""
 
