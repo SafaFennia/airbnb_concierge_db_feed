@@ -4,7 +4,7 @@ import io
 from typing import Iterable, Union
 
 
-class OpendatasoftPull(object):
+class BucketPull(object):
     """Retrieve data from opendatasoft API."""
 
     def __init__(self, base_url: str, dataset: str, filter_key: str, filter_values: Iterable[str],
@@ -24,7 +24,7 @@ class OpendatasoftPull(object):
         self.session = session
 
     def opendatasoft_download_api_call(self) -> pd.DataFrame:
-        """Request Opendatasoft API to get a dataset by filetring by its name and field."""
+        """Request API to get all ecov_connected networks (filter on field 'role')."""
         session = self.session or requests.Session()
         query_param = " OR ".join([f"{self.filter_key}=={v}" for v in self.filter_values])
         parameters = [("dataset", self.dataset), ("q", query_param)]
