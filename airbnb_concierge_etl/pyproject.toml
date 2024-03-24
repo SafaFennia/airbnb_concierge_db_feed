@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+namespaces = true
+where = ["."]
+
+[project]
+name = "airbnb_concierge_etl"
+dynamic = ["version"]
+requires-python = ">= 3.10"
+dependencies = [
+        "SQLAlchemy==2.0.21",
+        "psycopg2==2.9.9",
+        "pandas==2.1.1",
+        "requests==2.31.0"
+
+]
+
+[project.optional-dependencies]
+dev = [
+    'pytest',
+    'pydocstyle',
+]
+
+[tool.pytest.ini_options]
+markers = [
+    "integration",
+]
