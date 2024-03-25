@@ -17,3 +17,11 @@ CREATE TABLE public.airbnb_places (
     "city" text,
     "country" text
 );
+
+CREATE TABLE public.date_client_event (
+    "id" bigint,
+    "date" timestamp,
+    "city" text,
+    "airbnb_location_count" int,
+    "client_count" int
+);
