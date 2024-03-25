@@ -49,3 +49,17 @@ class AirbnbPlace(Base):
     updated_date = sa.Column(sa.Date)
     city = sa.Column(sa.String)
     country = sa.Column(sa.String)
+
+
+class DateClientEvent(Base):
+    """Contains Data Client Event information."""
+
+    __tablename__ = 'date_client_event'
+
+    # Unique RegisteredUser id, equivalent to backend users.id
+    id_ = sa.Column(sa.Integer, primary_key=True, name='id')
+    date = sa.Column(sa.Date)
+    city = sa.Column(sa.String)
+    airbnb_location_count = sa.Column(sa.Integer)
+    client_count = sa.Column(sa.Integer)
+

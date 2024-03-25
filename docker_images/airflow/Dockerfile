@@ -10,10 +10,6 @@ ENV AIRFLOW__API__AUTH_BACKENDS="airflow.api.auth.backend.basic_auth,airflow.api
 ENV AIRFLOW__CORE__HOSTNAME_CALLABLE="hostname_resolver.hostname"
 ENV AIRFLOW__WEBSERVER__WARN_DEPLOYMENT_EXPOSURE="False"
 
-# Config for DAG gps_tracks
-ENV TIME_WINDOW=30
-ENV THRESHOLD_DISTANCE=90
-
 # Create venv for tasks execution
 ENV PIP_USER=false
 RUN python3 -m venv /opt/airflow/airbnb_concierge_etl_venv
@@ -23,15 +19,13 @@ RUN apt-get update
 
 USER airflow
 
-# Install custom packages in these venv
+# Install custom packages in this venv
 # Install airbnb_concierge_etl
 COPY --chown=airflow:root ./airbnb_concierge_etl /tmp/airbnb_concierge_etl
 COPY --chown=airflow:root ./airbnb_concierge_etl /tmp/airbnb_concierge_etl
 RUN /opt/airflow/airbnb_concierge_etl_venv/bin/pip install \
     --no-cache-dir /tmp/airbnb_concierge_etl/. && \
     rm -r /tmp/airbnb_concierge_etl
-
-
 
 # Install DAGs files
 COPY ./docker_images/airflow/dags /opt/airflow/dags

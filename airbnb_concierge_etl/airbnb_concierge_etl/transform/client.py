@@ -3,7 +3,7 @@ This module provides functions to map client information (from bucket) to Client
 """
 import datetime
 from logging import getLogger
-from typing import List, Union
+from typing import List, Union, Tuple
 import requests
 import boto3
 import pandas as pd
@@ -33,7 +33,7 @@ def _get_city_name_from_address_and_zip_code(address: str, zip_code: str) -> Uni
 
 
 def raw_client_to_client_object(endpoint_url: str, username: str, pwd: str, bucket_name: str,
-                                start_datetime: datetime.datetime) -> List[Client]:
+                                start_datetime: datetime.datetime) -> Tuple[List[Client], pd.DataFrame]:
     """Map raw bucket clients information to Client objects.
 
     Args:
@@ -61,4 +61,4 @@ def raw_client_to_client_object(endpoint_url: str, username: str, pwd: str, buck
             zip=row.zip,
             created_at=row.created_at
         ) for row in raw_clients.itertuples(index=False)
-    ]
+    ], raw_clients

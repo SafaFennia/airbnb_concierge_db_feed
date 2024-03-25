@@ -1,12 +1,12 @@
 from dotenv import load_dotenv
 import os
-from sqlalchemy.orm.session import sessionmaker
-from datetime import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.engine import Engine
 from contextlib import contextmanager
 from airbnb_concierge_etl.transform.client import raw_client_to_client_object
+from airbnb_concierge_etl.transform.airbnb_place import raw_airbnb_place_to_airbnb_place_object
+from airbnb_concierge_etl.model import sandbox
 from logging import getLogger
 from functools import wraps
 
@@ -72,13 +72,17 @@ _username = os.environ['USERNAME']
 _pwd = os.environ['PWD']
 _bucket_name = os.environ['BUCKET_NAME']
 _sandbox_engine = os.environ['_SANDBOX_DB_SQLALCHEMY_ENGINE']
+_filter_key = "column_19"
+_filter_values = ["France"]
+_dataset = 'air-bnb-listings'
 
 
-def clients_upsert_pipe(start_date):
+def data_upsert_pipe(start_date):
     """Init and run Clients Pipe.
 
     """
-    clients = raw_client_to_client_object(_endpoint_url, _username, _pwd, _bucket_name, start_date)
+    ##CLIENT
+    clients, df_client = raw_client_to_client_object(_endpoint_url, _username, _pwd, _bucket_name, start_date)
     session = get_session_factory()
     for c in clients:
         try:
@@ -87,5 +91,29 @@ def clients_upsert_pipe(start_date):
             _logger.info(f"Client {c.id_} inserted.")
         except Exception:
             _logger.exception(f"Client {c.id_} insert failed.")
+    session.close()
+    _logger.info("Client upsert pipe is done.")
+    ##AIRBNB PLACES
+    airbnb_places, df_airbnb_places = raw_airbnb_place_to_airbnb_place_object(_dataset, _filter_key, _filter_values)
+    session = get_session_factory()
+    for abnb in airbnb_places:
+        try:
+            session.merge(abnb)
+            session.commit()
+            _logger.info(f"Client {abnb.id_} inserted.")
+        except Exception:
+            _logger.exception(f"Client {abnb.id_} insert failed.")
+    session.close()
+    _logger.info("Airbnb Places upsert pipe is done.")
+    ###Data Event Client
+    data_event = df_client.merge(df_client, on='city').groupby('created_at').agg(sum)
+
+    for d in data_event:
+        try:
+            session.merge(d)
+            session.commit()
+            _logger.info(f"Date Client Event {d.id_} inserted.")
+        except Exception:
+            _logger.exception(f"Date Client Event {d.id_} insert failed.")
     session.close()
     _logger.info("Client upsert pipe is done.")
