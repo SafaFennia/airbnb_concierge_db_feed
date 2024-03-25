@@ -3,6 +3,7 @@ import unittest.mock as mock
 import pytest
 from requests import HTTPError
 
+
 def test_opendatasoft_pull_should_call_api_with_right_params():
     # Given
     session = mock.Mock()
@@ -12,6 +13,7 @@ def test_opendatasoft_pull_should_call_api_with_right_params():
     filter_values = ["France"]
     dataset = 'air-bnb-listings'
     opendatasoft_pull = OpendatasoftPull(base_url, dataset, filter_key, filter_values, session)
+
     # When
     _ = opendatasoft_pull.opendatasoft_download_api_call()
 

@@ -7,14 +7,17 @@ from typing import Iterable, Union
 class OpendatasoftPull(object):
     """Retrieve data from opendatasoft API."""
 
-    def __init__(self, base_url: str, dataset: str, filter_key: str, filter_values: Iterable[str],
-                 session: Union[None, requests.Session] = None):
+    def __init__(self, dataset: str, filter_key: str, filter_values: Iterable[str],
+                 session: Union[None, requests.Session] = None,
+                 base_url: str = 'https://public.opendatasoft.com/api/records/1.0/download/'):
         """
         The OpendatasoftPull class initialization.
 
         Args:
             base_url: Opendatasoft API base url.
             dataset: opendatasoft dataset to call.
+            filter_key: field on which the filter will be applied.
+            filter_values: filter vales
             session: requests.session to use ; default will create a new one.
         """
         self.base_url = base_url

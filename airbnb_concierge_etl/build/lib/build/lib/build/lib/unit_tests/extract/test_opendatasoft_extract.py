@@ -3,15 +3,17 @@ import unittest.mock as mock
 import pytest
 from requests import HTTPError
 
+
 def test_opendatasoft_pull_should_call_api_with_right_params():
     # Given
     session = mock.Mock()
     session.get.return_value = mock.Mock(**{"text": "1;2"})
-    base_url = "https://public.opendatasoft.com/api/records/1.0/download/"
     filter_key = "column_19"
     filter_values = ["France"]
     dataset = 'air-bnb-listings'
-    opendatasoft_pull = OpendatasoftPull(base_url, dataset, filter_key, filter_values, session)
+    opendatasoft_pull = OpendatasoftPull(dataset=dataset, filter_key=filter_key,
+                                         filter_values=filter_values, session=session)
+
     # When
     _ = opendatasoft_pull.opendatasoft_download_api_call()
 
@@ -25,11 +27,11 @@ def test_opendatasoft_pull_raises_an_exception_when_status_code_not_ok():
     response = mock.Mock()
     response.raise_for_status.side_effect = HTTPError()
     session.get.return_value = response
-    base_url = "https://public.opendatasoft.com/api/records/1.0/download/"
     filter_key = "column_19"
     filter_values = ["France"]
     dataset = 'air-bnb-listings-not-found'
-    opendatasoft_pull = OpendatasoftPull(base_url, dataset, filter_key, filter_values, session)
+    opendatasoft_pull = OpendatasoftPull(dataset=dataset, filter_key=filter_key,
+                                         filter_values=filter_values, session=session)
 
     # Then
     with pytest.raises(HTTPError):
